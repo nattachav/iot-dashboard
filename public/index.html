@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>IoT Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      font-family: Arial;
+      margin: 0;
+      text-align: center;
+      background: #111;
+      color: white;
+    }
+
+    .container {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin: 20px;
+    }
+
+    .card {
+      background: #222;
+      padding: 20px;
+      border-radius: 15px;
+      width: 200px;
+    }
+
+    .value {
+      font-size: 30px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>🌐 IoT Dashboard</h1>
+
+<div class="container">
+  <div class="card">
+    <h3>🌡️ Temp</h3>
+    <div id="temp" class="value">-</div>
+  </div>
+
+  <div class="card">
+    <h3>💧 Humidity</h3>
+    <div id="hum" class="value">-</div>
+  </div>
+
+  <div class="card">
+    <h3>🌞 Light</h3>
+    <div id="light" class="value">-</div>
+  </div>
+</div>
+
+<canvas id="chart"></canvas>
+
+<script>
+let labels = [];
+let tempData = [];
+let humData = [];
+
+const ctx = document.getElementById("chart").getContext("2d");
+
+const chart = new Chart(ctx, {
+  type: "line",
+  data: {
+    labels: labels,
+    datasets: [
+      { label: "Temp", data: tempData },
+      { label: "Humidity", data: humData }
+    ]
+  }
+});
+
+async function load() {
+  const res = await fetch("/data");
+  const d = await res.json();
+
+  temp.innerText = d.temp;
+  hum.innerText = d.hum;
+  light.innerText = d.light;
+
+  const time = new Date().toLocaleTimeString();
+
+  labels.push(time);
+  tempData.push(d.temp);
+  humData.push(d.hum);
+
+  if (labels.length > 10) {
+    labels.shift();
+    tempData.shift();
+    humData.shift();
+  }
+
+  chart.update();
+
+  // เปลี่ยนสี
+  if (d.temp > 30) {
+    document.body.style.background = "#330000";
+  } else {
+    document.body.style.background = "#001a33";
+  }
+}
+
+setInterval(load, 2000);
+</script>
+
+</body>
+</html>
